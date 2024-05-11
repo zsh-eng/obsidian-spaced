@@ -1,4 +1,10 @@
-import { Notice, Platform, Plugin, WorkspaceLeaf } from "obsidian";
+import {
+    MarkdownView,
+    Notice,
+    Platform,
+    Plugin,
+    WorkspaceLeaf,
+} from "obsidian";
 import { SpacedSettingTab } from "./settings-tab";
 import { SpacedView } from "./view";
 
@@ -38,17 +44,22 @@ export const defaultSettings: SpacedSettings = {
     padding: 5,
 };
 
-function respondToMessage(event: MessageEvent) {
-    new Notice(JSON.stringify(event.data));
-}
-
 export default class SpacedPlugin extends Plugin {
     settings: SpacedSettings = defaultSettings;
+
+    async listener(event: MessageEvent) {
+        const editor =
+            this.app.workspace.getActiveViewOfType(MarkdownView).editor;
+        const contents = `${event.data?.card_contents?.question}\n\n${event.data?.card_contents?.answer}`;
+
+        editor.replaceRange(contents, editor.getCursor());
+        new Notice("Card contents inserted into editor.");
+    }
 
     async onload(): Promise<void> {
         await this.loadSettings();
 
-        window.addEventListener("message", respondToMessage);
+        window.addEventListener("message", this.listener);
 
         const frame = spacedFrame;
 
@@ -60,6 +71,7 @@ export default class SpacedPlugin extends Plugin {
                 name,
                 (l) => new SpacedView(l, this.settings, frame, name)
             );
+
             this.addCommand({
                 id: `open-spaced`,
                 name: `Open webapp in Obsidian`,
@@ -67,8 +79,8 @@ export default class SpacedPlugin extends Plugin {
             });
 
             this.addCommand({
-                id: "post-message",
-                name: "Post message",
+                id: "insert-current-card",
+                name: "Insert the contents of the current card into the editor",
                 callback: () => {
                     const spacedView =
                         this.app.workspace.getLeavesOfType(name)?.[0]?.view;
@@ -77,7 +89,9 @@ export default class SpacedPlugin extends Plugin {
                         return;
                     }
 
-                    spacedView.postMessage("hello world");
+                    spacedView.postMessage({
+                        action: "get-current-card",
+                    });
                 },
             });
 
@@ -102,7 +116,7 @@ export default class SpacedPlugin extends Plugin {
     }
 
     async onunload(): Promise<void> {
-        window.removeEventListener("message", respondToMessage);
+        window.removeEventListener("message", this.listener);
     }
 
     async loadSettings() {

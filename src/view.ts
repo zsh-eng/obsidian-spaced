@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Menu } from "obsidian";
+import { ItemView, MarkdownView, Menu, WorkspaceLeaf } from "obsidian";
 import { CustomFrame } from "./frame";
 import { FrameMetadata, SpacedSettings } from "./main";
 

@@ -1,8 +1,8 @@
 import { ItemView, WorkspaceLeaf, Menu } from "obsidian";
 import { CustomFrame } from "./frame";
-import { CustomFrameSettings, CustomFramesSettings } from "./main";
+import { FrameMetadata, SpacedSettings } from "./main";
 
-export class CustomFrameView extends ItemView {
+export class SpacedView extends ItemView {
     private static readonly actions: Action[] = [
         {
             name: "Return to original page",
@@ -42,14 +42,14 @@ export class CustomFrameView extends ItemView {
         },
     ];
 
-    private readonly data: CustomFrameSettings;
+    private readonly data: FrameMetadata;
     private readonly name: string;
     private frame: CustomFrame;
 
     constructor(
         leaf: WorkspaceLeaf,
-        settings: CustomFramesSettings,
-        data: CustomFrameSettings,
+        settings: SpacedSettings,
+        data: FrameMetadata,
         name: string
     ) {
         super(leaf);
@@ -58,7 +58,7 @@ export class CustomFrameView extends ItemView {
         this.frame = new CustomFrame(settings, data);
         this.navigation = data.openInCenter;
 
-        for (let action of CustomFrameView.actions)
+        for (let action of SpacedView.actions)
             this.addAction(action.icon, action.name, () => action.action(this));
     }
 
@@ -70,7 +70,7 @@ export class CustomFrameView extends ItemView {
 
     onPaneMenu(menu: Menu, source: string): void {
         super.onPaneMenu(menu, source);
-        for (let action of CustomFrameView.actions) {
+        for (let action of SpacedView.actions) {
             menu.addItem((i) => {
                 i.setTitle(action.name);
                 i.setIcon(action.icon);
@@ -99,5 +99,5 @@ export class CustomFrameView extends ItemView {
 interface Action {
     name: string;
     icon: string;
-    action: (view: CustomFrameView) => any;
+    action: (view: SpacedView) => any;
 }

@@ -1,12 +1,12 @@
 import { Platform } from "obsidian";
-import { CustomFrameSettings, CustomFramesSettings } from "src/main";
+import { FrameMetadata, SpacedSettings } from "src/main";
 
 export class CustomFrame {
-    private readonly settings: CustomFramesSettings;
-    private readonly data: CustomFrameSettings;
+    private readonly settings: SpacedSettings;
+    private readonly data: FrameMetadata;
     private frame: HTMLIFrameElement | any;
 
-    constructor(settings: CustomFramesSettings, data: CustomFrameSettings) {
+    constructor(settings: SpacedSettings, data: FrameMetadata) {
         this.settings = settings;
         this.data = data;
     }

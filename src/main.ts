@@ -1,9 +1,9 @@
 import { Plugin, Platform, WorkspaceLeaf } from "obsidian";
 import { CustomFrame } from "./frame";
-import { CustomFramesSettingTab } from "./settings-tab";
-import { CustomFrameView } from "./view";
+import { SpacedSettingTab } from "./settings-tab";
+import { SpacedView } from "./view";
 
-export interface CustomFrameSettings {
+export interface FrameMetadata {
     url: string;
     displayName: string;
     icon: string;
@@ -16,12 +16,12 @@ export interface CustomFrameSettings {
     customJs: string;
 }
 
-export interface CustomFramesSettings {
-    frames: CustomFrameSettings[];
+export interface SpacedSettings {
+    frames: FrameMetadata[];
     padding: number;
 }
 
-const spacedFrame: CustomFrameSettings = {
+const spacedFrame: FrameMetadata = {
     url: "https://pc.zsheng.app",
     displayName: "Spaced",
     icon: "book",
@@ -34,13 +34,13 @@ const spacedFrame: CustomFrameSettings = {
     customJs: "",
 };
 
-export const defaultSettings: CustomFramesSettings = {
+export const defaultSettings: SpacedSettings = {
     frames: [spacedFrame],
     padding: 5,
 };
 
-export default class CustomFramesPlugin extends Plugin {
-    settings: CustomFramesSettings = defaultSettings;
+export default class SpacedPlugin extends Plugin {
+    settings: SpacedSettings = defaultSettings;
 
     async onload(): Promise<void> {
         await this.loadSettings();
@@ -53,7 +53,7 @@ export default class CustomFramesPlugin extends Plugin {
 
             this.registerView(
                 name,
-                (l) => new CustomFrameView(l, this.settings, frame, name)
+                (l) => new SpacedView(l, this.settings, frame, name)
             );
             this.addCommand({
                 id: `open-${name}`,
@@ -78,7 +78,7 @@ export default class CustomFramesPlugin extends Plugin {
             );
         }
 
-        this.addSettingTab(new CustomFramesSettingTab(this.app, this));
+        this.addSettingTab(new SpacedSettingTab(this.app, this));
 
         this.registerMarkdownCodeBlockProcessor("custom-frames", (s, e) => {
             e.empty();
@@ -146,6 +146,6 @@ export default class CustomFramesPlugin extends Plugin {
             leaf = this.app.workspace.getLeavesOfType(name)[0];
             this.app.workspace.revealLeaf(leaf);
         }
-        if (leaf.view instanceof CustomFrameView) leaf.view.focus();
+        if (leaf.view instanceof SpacedView) leaf.view.focus();
     }
 }

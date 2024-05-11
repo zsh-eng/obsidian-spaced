@@ -5,12 +5,12 @@ import {
     PluginSettingTab,
     Setting,
 } from "obsidian";
-import CustomFramesPlugin, { defaultSettings } from "./main";
+import SpacedPlugin, { defaultSettings } from "./main";
 
-export class CustomFramesSettingTab extends PluginSettingTab {
-    plugin: CustomFramesPlugin;
+export class SpacedSettingTab extends PluginSettingTab {
+    plugin: SpacedPlugin;
 
-    constructor(app: App, plugin: CustomFramesPlugin) {
+    constructor(app: App, plugin: SpacedPlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }

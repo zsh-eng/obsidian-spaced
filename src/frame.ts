@@ -1,8 +1,7 @@
 import { Platform } from "obsidian";
-import { CustomFrameSettings, CustomFramesSettings, getId } from "./settings";
+import { CustomFrameSettings, CustomFramesSettings } from "src/main";
 
 export class CustomFrame {
-
     private readonly settings: CustomFramesSettings;
     private readonly data: CustomFrameSettings;
     private frame: HTMLIFrameElement | any;
@@ -12,10 +11,13 @@ export class CustomFrame {
         this.data = data;
     }
 
-    create(parent: HTMLElement, additionalStyle: string = undefined, urlSuffix: string = undefined): void {
+    create(
+        parent: HTMLElement,
+        additionalStyle: string = undefined,
+        urlSuffix: string = undefined
+    ): void {
         let style = `padding: ${this.settings.padding}px;`;
-        if (additionalStyle)
-            style += additionalStyle;
+        if (additionalStyle) style += additionalStyle;
         if (Platform.isDesktopApp && !this.data.forceIframe) {
             let frameDoc = parent.doc;
             this.frame = frameDoc.createElement("webview");
@@ -24,7 +26,7 @@ export class CustomFrame {
             this.frame.addEventListener("dom-ready", () => {
                 this.frame.setZoomFactor(this.data.zoomLevel);
                 this.frame.insertCSS(this.data.customCss);
-                this.frame.executeJavaScript(this.data.customJs)
+                this.frame.executeJavaScript(this.data.customJs);
             });
             this.frame.addEventListener("destroyed", () => {
                 // recreate the webview if it was moved to a new window
@@ -36,18 +38,23 @@ export class CustomFrame {
         } else {
             this.frame = parent.doc.createElement("iframe");
             parent.appendChild(this.frame);
-            this.frame.setAttribute("sandbox", "allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-downloads");
-            this.frame.setAttribute("allow", "encrypted-media; fullscreen; oversized-images; picture-in-picture; sync-xhr; geolocation;");
+            this.frame.setAttribute(
+                "sandbox",
+                "allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-downloads"
+            );
+            this.frame.setAttribute(
+                "allow",
+                "encrypted-media; fullscreen; oversized-images; picture-in-picture; sync-xhr; geolocation;"
+            );
             style += `transform: scale(${this.data.zoomLevel}); transform-origin: 0 0;`;
         }
         this.frame.addClass("custom-frames-frame");
-        this.frame.addClass(`custom-frames-${getId(this.data)}`);
+        this.frame.addClass(`custom-frames-spaced`);
         this.frame.setAttribute("style", style);
 
         let src = this.data.url;
         if (urlSuffix) {
-            if (!urlSuffix.startsWith("/"))
-                src += "/";
+            if (!urlSuffix.startsWith("/")) src += "/";
             src += urlSuffix;
         }
         this.frame.setAttribute("src", src);
@@ -96,7 +103,9 @@ export class CustomFrame {
     }
 
     getCurrentUrl(): string {
-        return this.frame instanceof HTMLIFrameElement ? this.frame.contentWindow.location.href : this.frame.getURL();
+        return this.frame instanceof HTMLIFrameElement
+            ? this.frame.contentWindow.location.href
+            : this.frame.getURL();
     }
 
     focus(): void {

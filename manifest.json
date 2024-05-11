@@ -1,10 +1,10 @@
 {
-    "id": "obsidian-custom-frames",
-    "name": "Custom Frames",
-    "version": "2.4.7",
+    "id": "obsidian-spaced",
+    "name": "Spaced",
+    "version": "0.0.1",
     "minAppVersion": "1.2.0",
-    "description": "A plugin that turns web apps into panes using iframes with custom styling. Also comes with presets for Google Keep, Todoist and more.",
-    "author": "Ellpeck",
-    "authorUrl": "https://ellpeck.de",
-    "isDesktopOnly": false
+    "description": "Obsidian plugin for spaced, a flashcard app.",
+    "author": "Cheng Zhi Sheng",
+    "authorUrl": "https://zsheng.app",
+    "isDesktopOnly": true
 }

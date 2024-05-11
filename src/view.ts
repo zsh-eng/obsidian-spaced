@@ -1,46 +1,57 @@
 import { ItemView, WorkspaceLeaf, Menu } from "obsidian";
 import { CustomFrame } from "./frame";
-import { CustomFrameSettings, CustomFramesSettings, getIcon } from "./settings";
+import { CustomFrameSettings, CustomFramesSettings } from "./main";
 
 export class CustomFrameView extends ItemView {
-
     private static readonly actions: Action[] = [
         {
             name: "Return to original page",
             icon: "home",
-            action: v => v.frame.return()
-        }, {
+            action: (v) => v.frame.return(),
+        },
+        {
             name: "Open dev tools",
             icon: "binary",
-            action: v => v.frame.toggleDevTools()
-        }, {
+            action: (v) => v.frame.toggleDevTools(),
+        },
+        {
             name: "Copy link",
             icon: "link",
-            action: v => navigator.clipboard.writeText(v.frame.getCurrentUrl())
-        }, {
+            action: (v) =>
+                navigator.clipboard.writeText(v.frame.getCurrentUrl()),
+        },
+        {
             name: "Open in browser",
             icon: "globe",
-            action: v => open(v.frame.getCurrentUrl())
-        }, {
+            action: (v) => open(v.frame.getCurrentUrl()),
+        },
+        {
             name: "Refresh",
             icon: "refresh-cw",
-            action: v => v.frame.refresh()
-        }, {
+            action: (v) => v.frame.refresh(),
+        },
+        {
             name: "Go back",
             icon: "arrow-left",
-            action: v => v.frame.goBack()
-        }, {
+            action: (v) => v.frame.goBack(),
+        },
+        {
             name: "Go forward",
             icon: "arrow-right",
-            action: v => v.frame.goForward()
-        }
+            action: (v) => v.frame.goForward(),
+        },
     ];
 
     private readonly data: CustomFrameSettings;
     private readonly name: string;
     private frame: CustomFrame;
 
-    constructor(leaf: WorkspaceLeaf, settings: CustomFramesSettings, data: CustomFrameSettings, name: string) {
+    constructor(
+        leaf: WorkspaceLeaf,
+        settings: CustomFramesSettings,
+        data: CustomFrameSettings,
+        name: string
+    ) {
         super(leaf);
         this.data = data;
         this.name = name;
@@ -60,7 +71,7 @@ export class CustomFrameView extends ItemView {
     onPaneMenu(menu: Menu, source: string): void {
         super.onPaneMenu(menu, source);
         for (let action of CustomFrameView.actions) {
-            menu.addItem(i => {
+            menu.addItem((i) => {
                 i.setTitle(action.name);
                 i.setIcon(action.icon);
                 i.onClick(() => action.action(this));
@@ -77,7 +88,7 @@ export class CustomFrameView extends ItemView {
     }
 
     getIcon(): string {
-        return getIcon(this.data);
+        return this.data.icon;
     }
 
     focus(): void {

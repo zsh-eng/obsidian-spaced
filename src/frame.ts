@@ -115,4 +115,10 @@ export class CustomFrame {
             this.frame.focus();
         }
     }
+
+    postMessage(data: unknown): void {
+        console.log(`posting message to ${this.frame.src}`);
+        console.log(`message: ${data}`);
+        this.frame.contentWindow.postMessage(data, "*");
+    }
 }

@@ -94,6 +94,10 @@ export class SpacedView extends ItemView {
     focus(): void {
         this.frame.focus();
     }
+
+    postMessage(data: unknown) {
+        this.frame.postMessage(data);
+    }
 }
 
 interface Action {

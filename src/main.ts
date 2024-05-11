@@ -1,5 +1,4 @@
-import { Plugin, Platform, WorkspaceLeaf } from "obsidian";
-import { CustomFrame } from "./frame";
+import { Notice, Platform, Plugin, WorkspaceLeaf } from "obsidian";
 import { SpacedSettingTab } from "./settings-tab";
 import { SpacedView } from "./view";
 
@@ -39,11 +38,17 @@ export const defaultSettings: SpacedSettings = {
     padding: 5,
 };
 
+function respondToMessage(event: MessageEvent) {
+    new Notice(JSON.stringify(event.data));
+}
+
 export default class SpacedPlugin extends Plugin {
     settings: SpacedSettings = defaultSettings;
 
     async onload(): Promise<void> {
         await this.loadSettings();
+
+        window.addEventListener("message", respondToMessage);
 
         const frame = spacedFrame;
 
@@ -56,9 +61,24 @@ export default class SpacedPlugin extends Plugin {
                 (l) => new SpacedView(l, this.settings, frame, name)
             );
             this.addCommand({
-                id: `open-${name}`,
-                name: `Open ${frame.displayName}`,
+                id: `open-spaced`,
+                name: `Open webapp in Obsidian`,
                 callback: () => this.openLeaf(name, frame.openInCenter, false),
+            });
+
+            this.addCommand({
+                id: "post-message",
+                name: "Post message",
+                callback: () => {
+                    const spacedView =
+                        this.app.workspace.getLeavesOfType(name)?.[0]?.view;
+                    if (!(spacedView instanceof SpacedView)) {
+                        new Notice("Please open spaced first.");
+                        return;
+                    }
+
+                    spacedView.postMessage("hello world");
+                },
             });
 
             if (frame.addRibbonIcon)
@@ -79,42 +99,10 @@ export default class SpacedPlugin extends Plugin {
         }
 
         this.addSettingTab(new SpacedSettingTab(this.app, this));
+    }
 
-        this.registerMarkdownCodeBlockProcessor("custom-frames", (s, e) => {
-            e.empty();
-            e.addClass("custom-frames-view-file");
-
-            let frameMatch = /frame:([^\n]+)/gi.exec(s);
-            let frameName = frameMatch && frameMatch[1].trim();
-            if (!frameName) {
-                e.createSpan({ text: "Couldn't parse frame name" });
-                return;
-            }
-            let data = this.settings.frames.find(
-                (f) => f.displayName == frameName
-            );
-            if (!data) {
-                e.createSpan({
-                    text: `Couldn't find a frame with name ${frameName}`,
-                });
-                return;
-            }
-            if (Platform.isMobileApp && data.hideOnMobile) {
-                e.createSpan({ text: `${frameName} is hidden on mobile` });
-                return;
-            }
-
-            let styleMatch = /style:([^\n]+)/gi.exec(s);
-            let style = styleMatch && styleMatch[1].trim();
-            style ||= "height: 600px;";
-
-            let urlSuffixMatch = /urlsuffix:([^\n]+)/gi.exec(s);
-            let urlSuffix = urlSuffixMatch && urlSuffixMatch[1].trim();
-            urlSuffix ||= "";
-
-            let frame = new CustomFrame(this.settings, data);
-            frame.create(e, style, urlSuffix);
-        });
+    async onunload(): Promise<void> {
+        window.removeEventListener("message", respondToMessage);
     }
 
     async loadSettings() {

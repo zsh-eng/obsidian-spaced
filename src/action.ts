@@ -1,3 +1,4 @@
+import { Editor, MarkdownView, Notice } from "obsidian";
 import { z } from "zod";
 
 /**
@@ -34,14 +35,50 @@ export const obsidianActionSchema = z.object({
     data: z.unknown(),
 });
 
-export type ObsidianAction = z.infer<typeof obsidianActionSchema>;
-export type ObsidianActionResponse = {
-    success: boolean;
-    data?: unknown;
-};
+export const obsidianActionResponseSchema = z.object({
+    success: z.boolean(),
+    action: z.enum(OBSIDIAN_ACTION_TYPES),
+    data: z.unknown().optional(),
+});
+export type ObsidianActionResponse = z.infer<
+    typeof obsidianActionResponseSchema
+>;
+
+export function isObsidianActionResponse(
+    response: unknown
+): response is ObsidianActionResponse {
+    return obsidianActionResponseSchema.safeParse(response).success;
+}
 
 export function isSuccessResponse(
     response: unknown
 ): response is ObsidianActionResponse & { success: true; data: unknown } {
-    return !!(response as ObsidianActionResponse)?.success;
+    if (!isObsidianActionResponse(response)) {
+        return false;
+    }
+    return response.success;
+}
+
+export function handleGetCurrentCard(data: unknown, editor: Editor) {
+    const schema = z.object({
+        card_contents: z.object({
+            question: z.string(),
+            answer: z.string(),
+        }),
+    });
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+        new Notice("Received invalid card contents.");
+        return;
+    }
+
+    const { card_contents: card } = parsed.data;
+    const input = `${card.question}\n\n${card.answer}`;
+
+    editor.replaceRange(input, editor.getCursor());
+    new Notice("Card contents inserted into editor.");
+}
+
+export function handleInsertCards(_data: unknown) {
+    new Notice("Received cards");
 }

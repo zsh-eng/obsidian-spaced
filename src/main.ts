@@ -7,7 +7,13 @@ import {
 } from "obsidian";
 import { SpacedSettingTab } from "./settings-tab";
 import { SpacedView } from "./view";
-import { isMessageEventFromSpaced, isSuccessResponse } from "src/action";
+import {
+    handleGetCurrentCard,
+    handleInsertCards,
+    isMessageEventFromSpaced,
+    isSuccessResponse,
+} from "src/action";
+import { z } from "zod";
 
 export interface FrameMetadata {
     url: string;
@@ -49,22 +55,28 @@ export default class SpacedPlugin extends Plugin {
     settings: SpacedSettings = defaultSettings;
 
     async listener(event: MessageEvent) {
+        // Ignore messages from other origins as other plugins might use the same event listener
         if (!isMessageEventFromSpaced(event)) {
-            new Notice("Received message from unknown origin.");
             return;
         }
+
         const res = event.data;
         if (!isSuccessResponse(res)) {
             new Notice("Received an unsuccessful response from the webapp.");
         }
 
         const data = res.data;
+
         const editor =
             this.app.workspace.getActiveViewOfType(MarkdownView).editor;
-        const contents = `${data?.card_contents?.question}\n\n${data?.card_contents?.answer}`;
-        editor.replaceRange(contents, editor.getCursor());
-
-        new Notice("Card contents inserted into editor.");
+        switch (res.action) {
+            case "get-current-card":
+                handleGetCurrentCard(data, editor);
+                break;
+            case "insert-cards":
+                handleInsertCards(data);
+                break;
+        }
     }
 
     async onload(): Promise<void> {
@@ -73,7 +85,6 @@ export default class SpacedPlugin extends Plugin {
         window.addEventListener("message", this.listener);
 
         const frame = spacedFrame;
-
         let name = `custom-frames-spaced`;
         try {
             console.log(`Registering frame ${name} for URL ${frame.url}`);
@@ -90,18 +101,36 @@ export default class SpacedPlugin extends Plugin {
             });
 
             this.addCommand({
-                id: "insert-current-card",
-                name: "Insert the contents of the current card into the editor",
+                id: "get-current-card",
+                name: "Insert contents of the current card into the editor",
                 callback: () => {
-                    const spacedView =
-                        this.app.workspace.getLeavesOfType(name)?.[0]?.view;
-                    if (!(spacedView instanceof SpacedView)) {
-                        new Notice("Please open spaced first.");
+                    const spacedView = this.getSpacedView();
+                    if (!spacedView) {
                         return;
                     }
 
                     spacedView.postMessage({
                         action: "get-current-card",
+                    });
+                },
+            });
+
+            this.addCommand({
+                id: "insert-cards",
+                name: "Add cards from the current file into bulk creation form",
+
+                callback: async () => {
+                    const spacedView = this.getSpacedView();
+                    if (!spacedView) {
+                        return;
+                    }
+
+                    const file = this.app.workspace.getActiveFile();
+                    const { vault } = this.app;
+                    const contents = await vault.read(file);
+                    spacedView.postMessage({
+                        action: "insert-cards",
+                        data: contents,
                     });
                 },
             });
@@ -160,5 +189,18 @@ export default class SpacedPlugin extends Plugin {
             this.app.workspace.revealLeaf(leaf);
         }
         if (leaf.view instanceof SpacedView) leaf.view.focus();
+    }
+
+    private getSpacedView(): SpacedView | undefined {
+        const spacedView = this.app.workspace.getLeavesOfType(
+            "custom-frames-spaced"
+        )?.[0]?.view;
+
+        if (!(spacedView instanceof SpacedView)) {
+            new Notice("Please open spaced first.");
+            return;
+        }
+
+        return spacedView;
     }
 }

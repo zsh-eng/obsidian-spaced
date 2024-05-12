@@ -1,4 +1,5 @@
 import { Platform } from "obsidian";
+import { SPACED_ORIGIN } from "src/action";
 import { FrameMetadata, SpacedSettings } from "src/main";
 
 export class CustomFrame {
@@ -117,8 +118,6 @@ export class CustomFrame {
     }
 
     postMessage(data: unknown): void {
-        console.log(`posting message to ${this.frame.src}`);
-        console.log(`message: ${data}`);
-        this.frame.contentWindow.postMessage(data, "*");
+        this.frame.contentWindow.postMessage(data, SPACED_ORIGIN);
     }
 }

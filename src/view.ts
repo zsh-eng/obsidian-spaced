@@ -1,6 +1,7 @@
 import { ItemView, MarkdownView, Menu, WorkspaceLeaf } from "obsidian";
 import { CustomFrame } from "./frame";
 import { FrameMetadata, SpacedSettings } from "./main";
+import { ObsidianAction } from "src/action";
 
 export class SpacedView extends ItemView {
     private static readonly actions: Action[] = [
@@ -95,8 +96,8 @@ export class SpacedView extends ItemView {
         this.frame.focus();
     }
 
-    postMessage(data: unknown) {
-        this.frame.postMessage(data);
+    postMessage(action: ObsidianAction) {
+        this.frame.postMessage(action);
     }
 }
 

@@ -7,6 +7,7 @@ import {
 } from "obsidian";
 import { SpacedSettingTab } from "./settings-tab";
 import { SpacedView } from "./view";
+import { isMessageEventFromSpaced, isSuccessResponse } from "src/action";
 
 export interface FrameMetadata {
     url: string;
@@ -48,11 +49,21 @@ export default class SpacedPlugin extends Plugin {
     settings: SpacedSettings = defaultSettings;
 
     async listener(event: MessageEvent) {
+        if (!isMessageEventFromSpaced(event)) {
+            new Notice("Received message from unknown origin.");
+            return;
+        }
+        const res = event.data;
+        if (!isSuccessResponse(res)) {
+            new Notice("Received an unsuccessful response from the webapp.");
+        }
+
+        const data = res.data;
         const editor =
             this.app.workspace.getActiveViewOfType(MarkdownView).editor;
-        const contents = `${event.data?.card_contents?.question}\n\n${event.data?.card_contents?.answer}`;
-
+        const contents = `${data?.card_contents?.question}\n\n${data?.card_contents?.answer}`;
         editor.replaceRange(contents, editor.getCursor());
+
         new Notice("Card contents inserted into editor.");
     }
 

@@ -9,7 +9,9 @@ import {
     OBSIDIAN_ACTION,
     handleGetCurrentCard,
     handleInsertCards,
+    handleUpdateCard,
     isMessageEventFromSpaced,
+    isObsidianActionType,
     isSuccessResponse,
 } from "src/action";
 import { SpacedSettingTab } from "./settings-tab";
@@ -69,13 +71,28 @@ export default class SpacedPlugin extends Plugin {
 
         const editor =
             this.app.workspace.getActiveViewOfType(MarkdownView).editor;
-        switch (res.action) {
-            case "get-current-card":
+
+        const action = res.action;
+        if (!isObsidianActionType(action)) {
+            new Notice("Unknown action received from the webapp.");
+            return;
+        }
+
+        switch (action) {
+            case OBSIDIAN_ACTION.GET_CURRENT_CARD:
                 handleGetCurrentCard(data, editor);
                 break;
-            case "insert-cards":
+            case OBSIDIAN_ACTION.INSERT_CARDS:
                 handleInsertCards(data);
                 break;
+            case OBSIDIAN_ACTION.UPDATE_FRONT:
+                handleUpdateCard(data);
+                break;
+            case OBSIDIAN_ACTION.UPDATE_BACK:
+                handleUpdateCard(data);
+                break;
+            default:
+                const _exhaustiveCheck: never = action;
         }
     }
 
@@ -131,6 +148,50 @@ export default class SpacedPlugin extends Plugin {
                     spacedView.postMessage({
                         action: OBSIDIAN_ACTION.INSERT_CARDS,
                         data: contents,
+                    });
+                },
+            });
+
+            this.addCommand({
+                id: OBSIDIAN_ACTION.UPDATE_FRONT,
+                name: "Update the front of the current card",
+                editorCallback: (editor) => {
+                    const spacedView = this.getSpacedView();
+                    if (!spacedView) {
+                        return;
+                    }
+
+                    const selection = editor.getSelection();
+                    if (!selection) {
+                        new Notice("No text selected.");
+                        return;
+                    }
+
+                    spacedView.postMessage({
+                        action: OBSIDIAN_ACTION.UPDATE_FRONT,
+                        data: selection,
+                    });
+                },
+            });
+
+            this.addCommand({
+                id: OBSIDIAN_ACTION.UPDATE_BACK,
+                name: "Update the back of the current card",
+                editorCallback: (editor) => {
+                    const spacedView = this.getSpacedView();
+                    if (!spacedView) {
+                        return;
+                    }
+
+                    const selection = editor.getSelection();
+                    if (!selection) {
+                        new Notice("No text selected.");
+                        return;
+                    }
+
+                    spacedView.postMessage({
+                        action: OBSIDIAN_ACTION.UPDATE_BACK,
+                        data: selection,
                     });
                 },
             });

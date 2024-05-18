@@ -43,6 +43,12 @@ const OBSIDIAN_ACTION_TYPES = [
 
 export type ObsidianActionType = (typeof OBSIDIAN_ACTION_TYPES)[number];
 
+export function isObsidianActionType(
+    action: unknown
+): action is ObsidianActionType {
+    return OBSIDIAN_ACTION_TYPES.includes(action as ObsidianActionType);
+}
+
 export const obsidianActionSchema = z.object({
     action: z.enum(OBSIDIAN_ACTION_TYPES),
     data: z.unknown(),
@@ -94,4 +100,8 @@ export function handleGetCurrentCard(data: unknown, editor: Editor) {
 
 export function handleInsertCards(_data: unknown) {
     new Notice("Received cards");
+}
+
+export function handleUpdateCard(_data: unknown) {
+    new Notice("Card updated");
 }

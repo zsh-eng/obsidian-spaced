@@ -1,10 +1,10 @@
-import { Editor, MarkdownView, Notice } from "obsidian";
+import { Editor, Notice } from "obsidian";
 import { z } from "zod";
 
 /**
  * The origin for the Obsidian app.
  */
-export const SPACED_ORIGIN = "https://pc.zsheng.app";
+export const SPACED_ORIGIN = "https://spaced.zsheng.app";
 
 export type MessageEventWithSource = MessageEvent & {
     source: MessageEventSource;

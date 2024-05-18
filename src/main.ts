@@ -7,6 +7,7 @@ import {
 } from "obsidian";
 import {
     OBSIDIAN_ACTION,
+    SPACED_ORIGIN,
     handleGetCurrentCard,
     handleInsertCards,
     handleUpdateCard,
@@ -36,7 +37,7 @@ export interface SpacedSettings {
 }
 
 const spacedFrame: FrameMetadata = {
-    url: "https://pc.zsheng.app",
+    url: SPACED_ORIGIN,
     displayName: "Spaced",
     icon: "book",
     hideOnMobile: true,

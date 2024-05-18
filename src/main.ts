@@ -5,15 +5,15 @@ import {
     Plugin,
     WorkspaceLeaf,
 } from "obsidian";
-import { SpacedSettingTab } from "./settings-tab";
-import { SpacedView } from "./view";
 import {
+    OBSIDIAN_ACTION,
     handleGetCurrentCard,
     handleInsertCards,
     isMessageEventFromSpaced,
     isSuccessResponse,
 } from "src/action";
-import { z } from "zod";
+import { SpacedSettingTab } from "./settings-tab";
+import { SpacedView } from "./view";
 
 export interface FrameMetadata {
     url: string;
@@ -101,7 +101,7 @@ export default class SpacedPlugin extends Plugin {
             });
 
             this.addCommand({
-                id: "get-current-card",
+                id: OBSIDIAN_ACTION.GET_CURRENT_CARD,
                 name: "Insert contents of the current card into the editor",
                 callback: () => {
                     const spacedView = this.getSpacedView();
@@ -110,13 +110,13 @@ export default class SpacedPlugin extends Plugin {
                     }
 
                     spacedView.postMessage({
-                        action: "get-current-card",
+                        action: OBSIDIAN_ACTION.GET_CURRENT_CARD,
                     });
                 },
             });
 
             this.addCommand({
-                id: "insert-cards",
+                id: OBSIDIAN_ACTION.INSERT_CARDS,
                 name: "Add cards from the current file into bulk creation form",
 
                 callback: async () => {
@@ -129,7 +129,7 @@ export default class SpacedPlugin extends Plugin {
                     const { vault } = this.app;
                     const contents = await vault.read(file);
                     spacedView.postMessage({
-                        action: "insert-cards",
+                        action: OBSIDIAN_ACTION.INSERT_CARDS,
                         data: contents,
                     });
                 },

@@ -148,7 +148,7 @@ export default class SpacedPlugin extends Plugin {
 
             this.addCommand({
                 id: OBSIDIAN_ACTION.INSERT_CARDS,
-                name: "Insert cards from file into bulk card creation form",
+                name: "Upload markdown file for bulk card creation",
 
                 callback: async () => {
                     const spacedView = this.getSpacedView();

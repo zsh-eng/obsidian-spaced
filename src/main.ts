@@ -12,7 +12,7 @@ import {
     handleInsertCards,
     handleUpdateCard,
     isMessageEventFromSpaced,
-    isObsidianActionType,
+    isObsidianAction,
     isSuccessResponse,
 } from "src/action";
 import { SpacedSettingTab } from "./settings-tab";
@@ -74,7 +74,7 @@ export default class SpacedPlugin extends Plugin {
             this.app.workspace.getActiveViewOfType(MarkdownView).editor;
 
         const action = res.action;
-        if (!isObsidianActionType(action)) {
+        if (!isObsidianAction(action)) {
             new Notice("Unknown action received from the webapp.");
             return;
         }
@@ -143,12 +143,25 @@ export default class SpacedPlugin extends Plugin {
                         return;
                     }
 
-                    const file = this.app.workspace.getActiveFile();
                     const { vault } = this.app;
+                    const file = this.app.workspace.getActiveFile();
+
                     const contents = await vault.read(file);
+                    const filename = file.basename;
+
+                    const cache = this.app.metadataCache.getFileCache(file);
+                    const mdTags =
+                        cache?.tags?.map((tag) => tag.tag.slice(1)) ?? [];
+                    const frontmatterTags = cache?.frontmatter?.tags ?? [];
+                    const tags = [...new Set([...mdTags, ...frontmatterTags])];
+
                     spacedView.postMessage({
                         action: OBSIDIAN_ACTION.INSERT_CARDS,
-                        data: contents,
+                        data: {
+                            content: contents,
+                            filename,
+                            tags: tags,
+                        },
                     });
                 },
             });

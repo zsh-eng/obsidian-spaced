@@ -4,7 +4,7 @@ import { z } from "zod";
 /**
  * The origin for the Obsidian app.
  */
-export const SPACED_ORIGIN = "https://spaced.zsheng.app";
+export const SPACED_ORIGIN = "https://pc.zsheng.app";
 
 export type MessageEventWithSource = MessageEvent & {
     source: MessageEventSource;
@@ -41,18 +41,41 @@ const OBSIDIAN_ACTION_TYPES = [
     OBSIDIAN_ACTION.UPDATE_BACK,
 ] as const;
 
-export type ObsidianActionType = (typeof OBSIDIAN_ACTION_TYPES)[number];
+export type ObsidianAction = (typeof OBSIDIAN_ACTION_TYPES)[number];
 
-export function isObsidianActionType(
-    action: unknown
-): action is ObsidianActionType {
-    return OBSIDIAN_ACTION_TYPES.includes(action as ObsidianActionType);
+export function isObsidianAction(action: unknown): action is ObsidianAction {
+    return OBSIDIAN_ACTION_TYPES.includes(action as ObsidianAction);
 }
 
-export const obsidianActionSchema = z.object({
-    action: z.enum(OBSIDIAN_ACTION_TYPES),
-    data: z.unknown(),
+const getCurrentCardSchema = z.object({
+    action: z.literal(OBSIDIAN_ACTION.GET_CURRENT_CARD),
+    data: z.unknown().optional(),
 });
+const insertCardsSchema = z.object({
+    action: z.literal(OBSIDIAN_ACTION.INSERT_CARDS),
+    data: z.object({
+        content: z.string(),
+        filename: z.string(),
+        tags: z.array(z.string()),
+    }),
+});
+const updateFrontSchema = z.object({
+    action: z.literal(OBSIDIAN_ACTION.UPDATE_FRONT),
+    data: z.string(),
+});
+const updateBackSchema = z.object({
+    action: z.literal(OBSIDIAN_ACTION.UPDATE_BACK),
+    data: z.string(),
+});
+
+export const obsidianActionRequestSchema = z.discriminatedUnion("action", [
+    getCurrentCardSchema,
+    insertCardsSchema,
+    updateFrontSchema,
+    updateBackSchema,
+]);
+
+export type ObsidianActionRequest = z.infer<typeof obsidianActionRequestSchema>;
 
 export const obsidianActionResponseSchema = z.object({
     success: z.boolean(),

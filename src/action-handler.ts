@@ -1,4 +1,5 @@
-import { Editor, Notice } from "obsidian";
+import { App, Editor, Notice } from "obsidian";
+import { FlashcardSuggestModal } from "src/ui/card-suggest-modal";
 import { z } from "zod";
 
 export function handleGetCurrentCard(data: unknown, editor: Editor) {
@@ -33,6 +34,25 @@ export function handleUpdateContext(_data: unknown) {
     new Notice("Context updated");
 }
 
-export function handleGetCardsBySourceId(data: unknown) {
-    console.log(data);
+export const flashcardSchema = z.object({
+    id: z.string(),
+    question: z.string(),
+    answer: z.string(),
+});
+export type Flashcard = z.infer<typeof flashcardSchema>;
+
+export function handleGetCardsBySourceId(data: unknown, app: App) {
+    const schema = z.array(
+        z.object({
+            card_contents: flashcardSchema,
+        })
+    );
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+        new Notice("Received invalid card contents.");
+        return;
+    }
+    const flashcards = parsed.data.map((card) => card.card_contents);
+
+    new FlashcardSuggestModal(app, flashcards).open();
 }

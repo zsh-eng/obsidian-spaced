@@ -103,7 +103,7 @@ export default class SpacedPlugin extends Plugin {
                 handleUpdateContext(data);
                 break;
             case OBSIDIAN_ACTION.GET_CARDS_BY_SOURCE_ID:
-                handleGetCardsBySourceId(data);
+                handleGetCardsBySourceId(data, app);
                 break;
             default:
                 const _exhaustiveCheck: never = action;

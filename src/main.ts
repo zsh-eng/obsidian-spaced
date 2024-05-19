@@ -17,6 +17,7 @@ import {
 } from "src/action";
 import { SpacedSettingTab } from "./settings-tab";
 import { SpacedView } from "./view";
+import { addFileIdToFrontmatter } from "src/utils";
 
 export interface FrameMetadata {
     url: string;
@@ -66,6 +67,8 @@ export default class SpacedPlugin extends Plugin {
         const res = event.data;
         if (!isSuccessResponse(res)) {
             new Notice("Received an unsuccessful response from the webapp.");
+            console.error(res.data);
+            return;
         }
 
         const data = res.data;
@@ -135,7 +138,7 @@ export default class SpacedPlugin extends Plugin {
 
             this.addCommand({
                 id: OBSIDIAN_ACTION.INSERT_CARDS,
-                name: "Add cards from the current file into bulk creation form",
+                name: "Insert cards from file into bulk card creation form",
 
                 callback: async () => {
                     const spacedView = this.getSpacedView();
@@ -143,8 +146,9 @@ export default class SpacedPlugin extends Plugin {
                         return;
                     }
 
-                    const { vault } = this.app;
+                    const { vault, fileManager } = this.app;
                     const file = this.app.workspace.getActiveFile();
+                    const id = await addFileIdToFrontmatter(fileManager, file);
 
                     const contents = await vault.read(file);
                     const filename = file.basename;
@@ -161,6 +165,7 @@ export default class SpacedPlugin extends Plugin {
                             content: contents,
                             filename,
                             tags: tags,
+                            id,
                         },
                     });
                 },

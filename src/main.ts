@@ -8,16 +8,20 @@ import {
 import {
     OBSIDIAN_ACTION,
     SPACED_ORIGIN,
-    handleGetCurrentCard,
-    handleInsertCards,
-    handleUpdateCard,
     isMessageEventFromSpaced,
     isObsidianAction,
     isSuccessResponse,
 } from "src/action";
+import {
+    handleGetCardsBySourceId,
+    handleGetCurrentCard,
+    handleInsertCards,
+    handleUpdateCard,
+    handleUpdateContext,
+} from "src/action-handler";
+import { addFileIdToFrontmatter, getFileIdFromFrontmatter } from "src/utils";
 import { SpacedSettingTab } from "./settings-tab";
 import { SpacedView } from "./view";
-import { addFileIdToFrontmatter } from "src/utils";
 
 export interface FrameMetadata {
     url: string;
@@ -94,6 +98,12 @@ export default class SpacedPlugin extends Plugin {
                 break;
             case OBSIDIAN_ACTION.UPDATE_BACK:
                 handleUpdateCard(data);
+                break;
+            case OBSIDIAN_ACTION.UPDATE_CONTEXT:
+                handleUpdateContext(data);
+                break;
+            case OBSIDIAN_ACTION.GET_CARDS_BY_SOURCE_ID:
+                handleGetCardsBySourceId(data);
                 break;
             default:
                 const _exhaustiveCheck: never = action;
@@ -211,6 +221,47 @@ export default class SpacedPlugin extends Plugin {
                     spacedView.postMessage({
                         action: OBSIDIAN_ACTION.UPDATE_BACK,
                         data: selection,
+                    });
+                },
+            });
+
+            this.addCommand({
+                id: OBSIDIAN_ACTION.UPDATE_CONTEXT,
+                name: "Update context",
+                callback: () => {
+                    const spacedView = this.getSpacedView();
+                    if (!spacedView) {
+                        return;
+                    }
+
+                    const file = this.app.workspace.getActiveFile();
+                    const frontmatter =
+                        this.app.metadataCache.getFileCache(file).frontmatter;
+                    const id = getFileIdFromFrontmatter(frontmatter);
+                    if (!id) {
+                        return;
+                    }
+
+                    spacedView.postMessage({
+                        action: OBSIDIAN_ACTION.UPDATE_CONTEXT,
+                        data: {
+                            sourceId: id,
+                        },
+                    });
+                },
+            });
+
+            this.addCommand({
+                id: OBSIDIAN_ACTION.GET_CARDS_BY_SOURCE_ID,
+                name: "Show cards for current file",
+                callback: () => {
+                    const spacedView = this.getSpacedView();
+                    if (!spacedView) {
+                        return;
+                    }
+
+                    spacedView.postMessage({
+                        action: OBSIDIAN_ACTION.GET_CARDS_BY_SOURCE_ID,
                     });
                 },
             });
